@@ -1,14 +1,15 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-
-const counter = ref(0);
-
-function increase(): void {
-  counter.value++;
-}
-</script>
-
 <template>
-  <div>Hello {{ counter }}</div>
-  <button @click="increase()">Increase</button>
+  <router-view />
 </template>
+
+<script setup lang="ts"></script>
+
+<style lang="less">
+body {
+  background: #f7f7f7;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+</style>
