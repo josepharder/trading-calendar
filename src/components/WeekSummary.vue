@@ -5,14 +5,14 @@
       {{ formatCurrency(week.weekPnL) }}
     </div>
     <div class="week-trades">
-      {{ week.weekTradeCount }} trade{{ week.weekTradeCount !== 1 ? 's' : '' }}
+      {{ formatTradeCount(week.weekTradeCount) }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { WeekData } from '@/services/interfaces/calendar'
-import { formatCurrency, getPnLClass } from '@/services/utils/formatters'
+import { formatCurrency, getPnLClass, formatTradeCount } from '@/services/utils/formatters'
 
 defineProps<{
   week: WeekData

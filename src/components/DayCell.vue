@@ -16,7 +16,7 @@
         {{ formatCurrency(day.pnl) }}
       </div>
       <div class="trade-count">
-        {{ day.tradeCount }} trade{{ day.tradeCount !== 1 ? 's' : '' }}
+        {{ formatTradeCount(day.tradeCount) }}
       </div>
     </div>
     <div v-else class="day-content empty">
@@ -29,7 +29,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Day } from '@/services/interfaces/calendar'
-import { formatCurrency, getPnLClass } from '@/services/utils/formatters'
+import { formatCurrency, getPnLClass, formatTradeCount } from '@/services/utils/formatters'
+import { getMonthFromDate, getYearFromDate } from '@/services/date'
 
 const props = defineProps<{
   day: Day
@@ -38,9 +39,9 @@ const props = defineProps<{
 }>()
 
 const isPreviousMonth = computed(() => {
-  const dayDate = new Date(props.day.date)
-  const dayMonth = dayDate.toLocaleString('en-US', { month: 'long' })
-  return dayMonth !== props.currentMonth || dayDate.getFullYear() !== props.currentYear
+  const dayMonth = getMonthFromDate(props.day.date)
+  const dayYear = getYearFromDate(props.day.date)
+  return dayMonth !== props.currentMonth || dayYear !== props.currentYear
 })
 </script>
 

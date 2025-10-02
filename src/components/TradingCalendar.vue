@@ -2,13 +2,9 @@
   <div class="trading-calendar">
     <div class="calendar-header">
       <div class="month-navigation">
-        <button class="nav-button" @click="previousMonth" aria-label="Previous month">
-          ←
-        </button>
+        <button class="nav-button" @click="previousMonth" aria-label="Previous month">←</button>
         <h2 class="month-title">{{ displayMonth }}, {{ displayYear }}</h2>
-        <button class="nav-button" @click="nextMonth" aria-label="Next month">
-          →
-        </button>
+        <button class="nav-button" @click="nextMonth" aria-label="Next month">→</button>
       </div>
       <div class="monthly-pnl">
         Monthly P&L:
@@ -17,7 +13,6 @@
     </div>
 
     <div class="calendar-grid">
-      <!-- Header row -->
       <div class="header-cell">Sun</div>
       <div class="header-cell">Mon</div>
       <div class="header-cell">Tue</div>
@@ -27,7 +22,6 @@
       <div class="header-cell">Sat</div>
       <div class="header-cell">Total</div>
 
-      <!-- Week rows -->
       <template v-for="(week, weekIndex) in weeks" :key="weekIndex">
         <DayCell
           v-for="day in week.days"
@@ -43,41 +37,54 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import DayCell from '@/components/DayCell.vue'
 import WeekSummary from '@/components/WeekSummary.vue'
 import type { CalendarData, Day, WeekData } from '@/services/interfaces/calendar'
 import { formatCurrency, getPnLClass, getMonthName } from '@/services/utils/formatters'
-import mockData from '../data/mockTradingData.json'
+import { fetchCalendarData, generateEmptyCalendar } from '@/services/calendarService'
 
-// Current date state
-const currentDate = ref(new Date())
+const currentDate = ref(new Date(2024, 10, 1))
 const displayMonth = computed(() => getMonthName(currentDate.value.getMonth()))
 const displayYear = computed(() => currentDate.value.getFullYear())
 
-// Load calendar data (in real app, this would fetch from API based on currentDate)
-const calendarData = ref<CalendarData>(mockData as CalendarData)
+const calendarData = ref<CalendarData | null>(null)
 
 const monthlyPnL = computed(() => calendarData.value?.monthlyPnL || 0)
 
-// Navigation functions
+const loadCalendarData = async () => {
+  const year = currentDate.value.getFullYear()
+  const month = currentDate.value.getMonth()
+
+  const data = await fetchCalendarData(year, month)
+
+  if (data) {
+    calendarData.value = data
+  } else {
+    calendarData.value = generateEmptyCalendar(year, month)
+  }
+}
+
 const previousMonth = () => {
   const newDate = new Date(currentDate.value)
   newDate.setMonth(newDate.getMonth() - 1)
   currentDate.value = newDate
-  // TODO: Fetch data for new month from API
-  console.log('Navigate to:', displayMonth.value, displayYear.value)
 }
 
 const nextMonth = () => {
   const newDate = new Date(currentDate.value)
   newDate.setMonth(newDate.getMonth() + 1)
   currentDate.value = newDate
-  // TODO: Fetch data for new month from API
-  console.log('Navigate to:', displayMonth.value, displayYear.value)
 }
 
-// Compute weeks from calendar data
+watch(currentDate, () => {
+  loadCalendarData()
+})
+
+onMounted(() => {
+  loadCalendarData()
+})
+
 const weeks = computed<WeekData[]>(() => {
   if (!calendarData.value?.days || calendarData.value.days.length === 0) {
     return []
@@ -88,13 +95,12 @@ const weeks = computed<WeekData[]>(() => {
   let weekIndex = 0
 
   calendarData.value.days.forEach((day, index) => {
-    // Start a new week on Sunday (dayOfWeek === 0)
     if (day.dayOfWeek === 0 && currentWeek.length > 0) {
       weeksArray.push({
-        weekNumber: calendarData.value.weeks[weekIndex]?.weekNumber || weekIndex + 1,
+        weekNumber: calendarData.value!.weeks[weekIndex]?.weekNumber || weekIndex + 1,
         days: currentWeek,
-        weekPnL: calendarData.value.weeks[weekIndex]?.weekPnL || 0,
-        weekTradeCount: calendarData.value.weeks[weekIndex]?.weekTradeCount || 0
+        weekPnL: calendarData.value!.weeks[weekIndex]?.weekPnL || 0,
+        weekTradeCount: calendarData.value!.weeks[weekIndex]?.weekTradeCount || 0
       })
       currentWeek = []
       weekIndex++
@@ -102,13 +108,12 @@ const weeks = computed<WeekData[]>(() => {
 
     currentWeek.push(day)
 
-    // Last day - push remaining days as final week
-    if (index === calendarData.value.days.length - 1 && currentWeek.length > 0) {
+    if (calendarData.value && index === calendarData.value.days.length - 1 && currentWeek.length > 0) {
       weeksArray.push({
-        weekNumber: calendarData.value.weeks[weekIndex]?.weekNumber || weekIndex + 1,
+        weekNumber: calendarData.value!.weeks[weekIndex]?.weekNumber || weekIndex + 1,
         days: currentWeek,
-        weekPnL: calendarData.value.weeks[weekIndex]?.weekPnL || 0,
-        weekTradeCount: calendarData.value.weeks[weekIndex]?.weekTradeCount || 0
+        weekPnL: calendarData.value!.weeks[weekIndex]?.weekPnL || 0,
+        weekTradeCount: calendarData.value!.weeks[weekIndex]?.weekTradeCount || 0
       })
     }
   })
