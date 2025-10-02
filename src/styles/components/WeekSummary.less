@@ -1,0 +1,38 @@
+.week-summary {
+  background: #252d3a;
+  border: 1px solid #3a4556;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-height: 90px;
+}
+
+.week-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.week-pnl {
+  font-size: 18px;
+  font-weight: 700;
+
+  &.positive {
+    color: #4ade80;
+  }
+
+  &.negative {
+    color: #f87171;
+  }
+
+  &.neutral {
+    color: #9ca3af;
+  }
+}
+
+.week-trades {
+  font-size: 12px;
+  color: #9ca3af;
+}

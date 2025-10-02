@@ -1,0 +1,102 @@
+.trading-calendar {
+  padding: 20px;
+  background: #1e2530;
+  color: #e0e0e0;
+  height: 100%;
+  overflow: auto;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #3a4556;
+}
+
+.month-navigation {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-button {
+  background: #3a4556;
+  border: 1px solid #4a5568;
+  color: #e0e0e0;
+  font-size: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #4a5568;
+    border-color: #5a6678;
+  }
+
+  &:active {
+    background: #2a3441;
+  }
+}
+
+.month-title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
+  min-width: 200px;
+  text-align: center;
+}
+
+.monthly-pnl {
+  font-size: 18px;
+  font-weight: 500;
+
+  .positive {
+    color: #4ade80;
+  }
+
+  .negative {
+    color: #f87171;
+  }
+
+  .neutral {
+    color: #9ca3af;
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  background: #2a3441;
+  border: 1px solid #3a4556;
+}
+
+.header-cell {
+  background: #252d3a;
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: #9ca3af;
+  border: 1px solid #3a4556;
+}
+
+.positive {
+  color: #4ade80;
+}
+
+.negative {
+  color: #f87171;
+}
+
+.neutral {
+  color: #9ca3af;
+}

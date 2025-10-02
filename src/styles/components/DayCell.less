@@ -1,0 +1,74 @@
+.day-cell {
+  background: #2a3441;
+  border: 1px solid #3a4556;
+  padding: 12px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #323c4d;
+    cursor: pointer;
+  }
+
+  &.is-previous-month {
+    opacity: 0.4;
+  }
+
+  &.no-trades {
+    opacity: 0.6;
+  }
+}
+
+.day-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-indicator {
+  font-size: 12px;
+}
+
+.day-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &.empty {
+    opacity: 0.5;
+  }
+}
+
+.pnl {
+  font-size: 16px;
+  font-weight: 700;
+
+  &.positive {
+    color: #4ade80;
+  }
+
+  &.negative {
+    color: #f87171;
+  }
+
+  &.neutral {
+    color: #9ca3af;
+  }
+}
+
+.trade-count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.no-data {
+  font-size: 16px;
+  color: #6b7280;
+}
