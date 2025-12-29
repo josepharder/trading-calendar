@@ -42,9 +42,10 @@ import DayCell from '@/components/DayCell.vue'
 import WeekSummary from '@/components/WeekSummary.vue'
 import type { CalendarData, Day, WeekData } from '@/services/interfaces/calendar'
 import { formatCurrency, getPnLClass, getMonthName } from '@/services/utils/formatters'
-import { fetchCalendarData, generateEmptyCalendar } from '@/services/calendarService'
+import { fetchCalendarData, generateEmptyCalendar, getLatestDataMonth } from '@/services/calendarService'
 
-const currentDate = ref(new Date(2024, 10, 1))
+const latestData = getLatestDataMonth()
+const currentDate = ref(new Date(latestData.year, latestData.month, 1))
 const displayMonth = computed(() => getMonthName(currentDate.value.getMonth()))
 const displayYear = computed(() => currentDate.value.getFullYear())
 

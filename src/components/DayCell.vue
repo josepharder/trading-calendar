@@ -9,9 +9,9 @@
   >
     <div class="day-number">
       {{ day.dayOfMonth }}
-      <span v-if="day.hasNotes" class="note-indicator">📋</span>
+      <span v-if="day.hasNotes && !isPreviousMonth" class="note-indicator">📋</span>
     </div>
-    <div v-if="day.tradeCount > 0" class="day-content">
+    <div v-if="!isPreviousMonth && day.tradeCount > 0" class="day-content">
       <div class="pnl" :class="getPnLClass(day.pnl)">
         {{ formatCurrency(day.pnl) }}
       </div>

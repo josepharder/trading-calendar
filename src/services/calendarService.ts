@@ -100,3 +100,16 @@ export const generateEmptyCalendar = (year: number, month: number): CalendarData
 export const clearCalendarCaches = (): void => {
   computedCache.resetCache([ComputedCacheKey.CALENDAR_DATA, ComputedCacheKey.EMPTY_CALENDAR])
 }
+
+export const getLatestDataMonth = (): { year: number; month: number } => {
+  const dataStore = mockDataStore as Record<string, CalendarData>
+  const monthKeys = Object.keys(dataStore).sort().reverse()
+
+  if (monthKeys.length === 0) {
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth() }
+  }
+
+  const [year, month] = monthKeys[0].split('-').map(Number)
+  return { year, month: month - 1 }
+}
