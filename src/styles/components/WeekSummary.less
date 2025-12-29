@@ -7,12 +7,23 @@
   justify-content: center;
   gap: 6px;
   min-height: 90px;
+
+  &.no-trades {
+    background: #1a1f2a;
+    border-color: #2a3340;
+    opacity: 0.5;
+  }
+
+  &.has-trades {
+    background: #252d3a;
+    border-color: #3a4556;
+  }
 }
 
 .week-label {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: #fff;
 }
 
 .week-pnl {
@@ -28,11 +39,11 @@
   }
 
   &.neutral {
-    color: #9ca3af;
+    color: #fff;
   }
 }
 
 .week-trades {
   font-size: 12px;
-  color: #9ca3af;
+  color: #fff;
 }

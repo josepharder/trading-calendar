@@ -7,6 +7,13 @@ export interface Day {
   hasNotes: boolean
 }
 
+export interface JsonDay {
+  date: string
+  pnl: number
+  tradeCount: number
+  hasNotes: boolean
+}
+
 export interface WeekData {
   weekNumber: number
   days: Day[]
@@ -26,4 +33,10 @@ export interface CalendarData {
   monthlyPnL: number
   days: Day[]
   weeks: WeekSummary[]
+}
+
+export interface PnLDataEntry {
+  month: string
+  year: number
+  days: JsonDay[]
 }

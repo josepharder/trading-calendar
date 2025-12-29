@@ -13,13 +13,13 @@
     </div>
 
     <div class="calendar-grid">
-      <div class="header-cell">Sun</div>
       <div class="header-cell">Mon</div>
       <div class="header-cell">Tue</div>
       <div class="header-cell">Wed</div>
       <div class="header-cell">Thu</div>
       <div class="header-cell">Fri</div>
       <div class="header-cell">Sat</div>
+      <div class="header-cell">Sun</div>
       <div class="header-cell">Total</div>
 
       <template v-for="(week, weekIndex) in weeks" :key="weekIndex">
@@ -37,90 +37,162 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import DayCell from '@/components/DayCell.vue'
-import WeekSummary from '@/components/WeekSummary.vue'
-import type { CalendarData, Day, WeekData } from '@/services/interfaces/calendar'
-import { formatCurrency, getPnLClass, getMonthName } from '@/services/utils/formatters'
-import { fetchCalendarData, generateEmptyCalendar, getLatestDataMonth } from '@/services/calendarService'
+import { computed, ref, watch, onMounted } from 'vue';
+import DayCell from '@/components/DayCell.vue';
+import WeekSummary from '@/components/WeekSummary.vue';
+import type { CalendarData, Day, WeekData } from '@/services/interfaces/calendar';
+import { formatCurrency, getPnLClass } from '@/services/utils/formatters';
+import { fetchCalendarData, generateEmptyCalendar, getLatestDataMonth } from '@/services/calendarService';
+import {
+  getMonthName,
+  getDaysInMonth,
+  getMonthIndex,
+  getYear,
+  addMonths,
+  setMonthAndYear,
+  createISODate,
+  getDayOfWeek
+} from '@/services/date';
 
-const latestData = getLatestDataMonth()
-const currentDate = ref(new Date(latestData.year, latestData.month, 1))
-const displayMonth = computed(() => getMonthName(currentDate.value.getMonth()))
-const displayYear = computed(() => currentDate.value.getFullYear())
+const latestData = getLatestDataMonth();
+const currentDate = ref(setMonthAndYear(latestData.year, latestData.month));
+const displayMonth = computed(() => getMonthName(getMonthIndex(currentDate.value)));
+const displayYear = computed(() => getYear(currentDate.value));
 
-const calendarData = ref<CalendarData | null>(null)
+const calendarData = ref<CalendarData | null>(null);
 
-const monthlyPnL = computed(() => calendarData.value?.monthlyPnL || 0)
+const monthlyPnL = computed(() => {
+  if (!calendarData.value?.days) return 0;
+
+  const year = getYear(currentDate.value);
+  const month = getMonthIndex(currentDate.value);
+  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+  return calendarData.value.days
+    .filter((day) => day.date.startsWith(monthKey))
+    .reduce((sum, day) => sum + (day.pnl || 0), 0);
+});
 
 const loadCalendarData = async () => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
+  const year = getYear(currentDate.value);
+  const month = getMonthIndex(currentDate.value);
 
-  const data = await fetchCalendarData(year, month)
+  const data = await fetchCalendarData(year, month);
 
   if (data) {
-    calendarData.value = data
+    calendarData.value = data;
   } else {
-    calendarData.value = generateEmptyCalendar(year, month)
+    calendarData.value = generateEmptyCalendar(year, month);
   }
-}
+};
 
 const previousMonth = () => {
-  const newDate = new Date(currentDate.value)
-  newDate.setMonth(newDate.getMonth() - 1)
-  currentDate.value = newDate
-}
+  currentDate.value = addMonths(currentDate.value, -1);
+};
 
 const nextMonth = () => {
-  const newDate = new Date(currentDate.value)
-  newDate.setMonth(newDate.getMonth() + 1)
-  currentDate.value = newDate
-}
+  currentDate.value = addMonths(currentDate.value, 1);
+};
 
 watch(currentDate, () => {
-  loadCalendarData()
-})
+  loadCalendarData();
+});
 
 onMounted(() => {
-  loadCalendarData()
-})
+  loadCalendarData();
+});
 
 const weeks = computed<WeekData[]>(() => {
-  if (!calendarData.value?.days || calendarData.value.days.length === 0) {
-    return []
+  const year = getYear(currentDate.value);
+  const month = getMonthIndex(currentDate.value);
+
+  const firstDayOfWeek = getDayOfWeek(createISODate(year, month, 1));
+  const mondayOffset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+  const daysInMonth = getDaysInMonth(year, month);
+  const prevMonthDays = getDaysInMonth(year, month - 1);
+
+  const dayDataMap = new Map<string, Day>();
+  if (calendarData.value?.days) {
+    calendarData.value.days.forEach((day) => {
+      dayDataMap.set(day.date, day);
+    });
   }
 
-  const weeksArray: WeekData[] = []
-  let currentWeek: Day[] = []
-  let weekIndex = 0
+  const allDays: Day[] = [];
 
-  calendarData.value.days.forEach((day, index) => {
-    if (day.dayOfWeek === 0 && currentWeek.length > 0) {
-      weeksArray.push({
-        weekNumber: calendarData.value!.weeks[weekIndex]?.weekNumber || weekIndex + 1,
-        days: currentWeek,
-        weekPnL: calendarData.value!.weeks[weekIndex]?.weekPnL || 0,
-        weekTradeCount: calendarData.value!.weeks[weekIndex]?.weekTradeCount || 0
-      })
-      currentWeek = []
-      weekIndex++
-    }
+  // Add days from previous month
+  for (let i = mondayOffset - 1; i >= 0; i--) {
+    const dayNum = prevMonthDays - i;
+    const dateString = createISODate(year, month - 1, dayNum);
+    const dayData = dayDataMap.get(dateString);
 
-    currentWeek.push(day)
+    allDays.push(
+      dayData || {
+        date: dateString,
+        dayOfMonth: dayNum,
+        dayOfWeek: getDayOfWeek(dateString),
+        pnl: 0,
+        tradeCount: 0,
+        hasNotes: false
+      }
+    );
+  }
 
-    if (calendarData.value && index === calendarData.value.days.length - 1 && currentWeek.length > 0) {
-      weeksArray.push({
-        weekNumber: calendarData.value!.weeks[weekIndex]?.weekNumber || weekIndex + 1,
-        days: currentWeek,
-        weekPnL: calendarData.value!.weeks[weekIndex]?.weekPnL || 0,
-        weekTradeCount: calendarData.value!.weeks[weekIndex]?.weekTradeCount || 0
-      })
-    }
-  })
+  // Add days from current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateString = createISODate(year, month, day);
+    const dayData = dayDataMap.get(dateString);
 
-  return weeksArray
-})
+    allDays.push(
+      dayData || {
+        date: dateString,
+        dayOfMonth: day,
+        dayOfWeek: getDayOfWeek(dateString),
+        pnl: 0,
+        tradeCount: 0,
+        hasNotes: false
+      }
+    );
+  }
+
+  // Add days from next month
+  const lastDayOfWeek = getDayOfWeek(createISODate(year, month, daysInMonth));
+  const daysToAdd = lastDayOfWeek === 0 ? 0 : 7 - lastDayOfWeek;
+  for (let i = 1; i <= daysToAdd; i++) {
+    const dateString = createISODate(year, month + 1, i);
+    const dayData = dayDataMap.get(dateString);
+
+    allDays.push(
+      dayData || {
+        date: dateString,
+        dayOfMonth: i,
+        dayOfWeek: getDayOfWeek(dateString),
+        pnl: 0,
+        tradeCount: 0,
+        hasNotes: false
+      }
+    );
+  }
+
+  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+
+  const weeksArray: WeekData[] = [];
+  for (let i = 0; i < allDays.length; i += 7) {
+    const weekDays = allDays.slice(i, i + 7);
+    const currentMonthDays = weekDays.filter((day) => day.date.startsWith(monthKey));
+    const weekPnL = currentMonthDays.reduce((sum, day) => sum + (day.pnl || 0), 0);
+    const weekTradeCount = currentMonthDays.reduce((sum, day) => sum + (day.tradeCount || 0), 0);
+
+    weeksArray.push({
+      weekNumber: Math.floor(i / 7) + 1,
+      days: weekDays,
+      weekPnL,
+      weekTradeCount
+    });
+  }
+
+  return weeksArray;
+});
 </script>
 
 <style lang="less" scoped>

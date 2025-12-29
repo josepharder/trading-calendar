@@ -1,5 +1,11 @@
 <template>
-  <div class="week-summary">
+  <div
+    class="week-summary"
+    :class="{
+      'has-trades': week.weekTradeCount > 0,
+      'no-trades': week.weekTradeCount === 0
+    }"
+  >
     <div class="week-label">Week {{ week.weekNumber }}</div>
     <div class="week-pnl" :class="getPnLClass(week.weekPnL)">
       {{ formatCurrency(week.weekPnL) }}

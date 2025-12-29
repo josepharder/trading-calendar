@@ -5,17 +5,13 @@ class ComputedCache {
 
   private getClearCacheState(): Record<ComputedCacheKey, Record<string, unknown>> {
     return {
-      [ComputedCacheKey.STRING_TO_DATE]: {},
-      [ComputedCacheKey.DATE_TO_STRING]: {},
-      [ComputedCacheKey.MONTH_NAME]: {},
-      [ComputedCacheKey.DAY_OF_WEEK]: {},
-      [ComputedCacheKey.MONTH_FROM_DATE]: {},
-      [ComputedCacheKey.YEAR_FROM_DATE]: {},
       [ComputedCacheKey.CURRENCY_FORMAT]: {},
       [ComputedCacheKey.PNL_CLASS]: {},
       [ComputedCacheKey.TRADE_COUNT_FORMAT]: {},
       [ComputedCacheKey.CALENDAR_DATA]: {},
-      [ComputedCacheKey.EMPTY_CALENDAR]: {}
+      [ComputedCacheKey.EMPTY_CALENDAR]: {},
+      [ComputedCacheKey.DAY_OF_WEEK]: {},
+      [ComputedCacheKey.DAYS_IN_MONTH]: {}
     };
   }
 

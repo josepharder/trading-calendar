@@ -7,22 +7,24 @@
       'no-trades': day.tradeCount === 0
     }"
   >
-    <div class="day-number">
-      {{ day.dayOfMonth }}
-      <span v-if="day.hasNotes && !isPreviousMonth" class="note-indicator">📋</span>
-    </div>
-    <div v-if="!isPreviousMonth && day.tradeCount > 0" class="day-content">
-      <div class="pnl" :class="getPnLClass(day.pnl)">
-        {{ formatCurrency(day.pnl) }}
+    <template v-if="!isPreviousMonth">
+      <div class="day-number">
+        {{ day.dayOfMonth }}
+        <span v-if="day.hasNotes" class="note-indicator">📋</span>
       </div>
-      <div class="trade-count">
-        {{ formatTradeCount(day.tradeCount) }}
+      <div v-if="day.tradeCount > 0" class="day-content">
+        <div class="pnl" :class="getPnLClass(day.pnl)">
+          {{ formatCurrency(day.pnl) }}
+        </div>
+        <div class="trade-count">
+          {{ formatTradeCount(day.tradeCount) }}
+        </div>
       </div>
-    </div>
-    <div v-else class="day-content empty">
-      <div class="no-data">$0</div>
-      <div class="trade-count">0 trades</div>
-    </div>
+      <div v-else class="day-content empty">
+        <div class="no-data">$0</div>
+        <div class="trade-count">0 trades</div>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -30,7 +32,6 @@
 import { computed } from 'vue'
 import type { Day } from '@/services/interfaces/calendar'
 import { formatCurrency, getPnLClass, formatTradeCount } from '@/services/utils/formatters'
-import { getMonthFromDate, getYearFromDate } from '@/services/date'
 
 const props = defineProps<{
   day: Day
@@ -38,10 +39,16 @@ const props = defineProps<{
   currentYear: number
 }>()
 
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December']
+
 const isPreviousMonth = computed(() => {
-  const dayMonth = getMonthFromDate(props.day.date)
-  const dayYear = getYearFromDate(props.day.date)
-  return dayMonth !== props.currentMonth || dayYear !== props.currentYear
+  const [yearStr, monthStr] = props.day.date.split('-')
+  const dayYear = parseInt(yearStr)
+  const dayMonthIndex = parseInt(monthStr) - 1
+  const currentMonthIndex = MONTHS.indexOf(props.currentMonth)
+
+  return dayYear !== props.currentYear || dayMonthIndex !== currentMonthIndex
 })
 </script>
 
